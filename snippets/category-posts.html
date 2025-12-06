@@ -90,6 +90,13 @@
                 <time datetime="${pubDate}" class="text-sm text-stone-400">${new Date(pubDate).toLocaleDateString('pt-BR')}</time>
               </div>
               
+              ${img ? `
+              <!-- Image -->
+              <div class="w-full h-48 rounded-lg overflow-hidden">
+                <img src="${img}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              </div>
+              ` : ''}
+              
               <!-- Title -->
               <h2 class="text-lg font-semibold text-stone-900 group-hover:text-emerald-700 transition-colors">
                 ${title}
