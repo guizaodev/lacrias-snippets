@@ -45,6 +45,9 @@
       const title = item.querySelector('title')?.textContent || 'Sem título';
       const link = item.querySelector('link')?.textContent || '#';
       const pubDate = item.querySelector('pubDate')?.textContent;
+      const category = item.querySelector('category')?.textContent || 'Sem categoria';
+      const author = item.querySelector('dc\\:creator')?.textContent || 'Autor Desconhecido';
+      const commentsCount = item.querySelector('slash\\:comments')?.textContent || '0';
       const contentEncoded = item.querySelector('content\\:encoded')?.textContent || item.querySelector('description')?.textContent || '';
       
       let img = null;
@@ -58,14 +61,45 @@
       const li = document.createElement('li');
       li.className = 'mb-3';
       li.innerHTML = `
-        <a href="${link}" class="flex gap-2.5 items-center no-underline text-inherit hover:opacity-80 transition-opacity">
-          ${img ? `<img src="${img}" alt="${title}" class="w-21 h-15 object-cover rounded-md flex-shrink-0">` : ''}
-          <div>
-            <div class="font-semibold">${title}</div>
-            ${pubDate ? `<div class="text-xs text-gray-600">${new Date(pubDate).toLocaleDateString('pt-BR')}</div>` : ''}
-            <div class="text-sm text-gray-700">${stripHtml(contentEncoded).slice(0,120)}${stripHtml(contentEncoded).length>120?'…':''}</div>
-          </div>
-        </a>
+        <article class="group bg-white rounded-xl border border-stone-200 hover:border-emerald-300 hover:shadow-md transition-all duration-300">
+          <a href="${link}" class="block p-5">
+            <div class="flex flex-col gap-3">
+              <!-- Category & Date -->
+              <div class="flex items-center justify-between">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                ${category}
+                </span>
+                <time datetime="${pubDate}" class="text-sm text-stone-400">${new Date(pubDate).toLocaleDateString('pt-BR')}</time>
+              </div>
+              
+              <!-- Title -->
+              <h2 class="text-lg font-semibold text-stone-900 group-hover:text-emerald-700 transition-colors">
+                ${title}
+              </h2>
+              
+              <!-- Description -->
+              <p class="text-stone-500 text-sm leading-relaxed">
+                ${stripHtml(contentEncoded).slice(0,150)}${stripHtml(contentEncoded).length>150?'…':''}
+              </p>
+              
+              <!-- Footer: Author & Comments -->
+              <div class="flex items-center justify-between pt-2 border-t border-stone-100">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <span class="text-xs font-medium text-emerald-700">RT</span>
+                  </div>
+                  <span class="text-sm text-stone-600">${author}</span>
+                </div>
+                <div class="flex items-center gap-1.5 text-stone-400">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                  </svg>
+                  <span class="text-sm">${commentsCount}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+        </article>
       `;
       ul.appendChild(li);
     });
