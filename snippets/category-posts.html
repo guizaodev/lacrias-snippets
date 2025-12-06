@@ -5,8 +5,8 @@
 
 <script>
 (async function(){
-  const feedUrl = 'https://laboratorios.ufpr.br/lacrias/category/noticias-internas/feed/'; // <-- coloque o feed de POSTS correto
-  proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
+  const feedUrl = 'https://laboratorios.ufpr.br/lacrias/category/noticias-internas/feed/';
+  const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
   const maxPosts = 6;
 
   function stripHtml(html){
@@ -18,15 +18,21 @@
   try {
     const res = await fetch(proxy);
     if (!res.ok) throw new Error('Erro: ' + res.status);
-    const text = await res.text();
+    
+    // Pega o JSON retornado pelo proxy
+    const data = await res.json();
+    
+    // Extrai o conteúdo (que está em base64)
+    const base64Content = data.contents.split(',')[1];
+    const xmlText = atob(base64Content);
+    
     const parser = new DOMParser();
-    const xml = parser.parseFromString(text, 'application/xml');
+    const xml = parser.parseFromString(xmlText, 'application/xml');
 
     const items = Array.from(xml.querySelectorAll('item')).slice(0, maxPosts);
 
     if (!items.length) {
-      document.getElementById('posts-list').innerHTML = '<p>Não foram encontrados &lt;item&gt; no feed. Verifique se você está usando o <strong>feed de POSTS</strong> da categoria (não o feed de comentários).</p>';
-      console.log('Conteúdo do feed:', text);
+      document.getElementById('posts-list').innerHTML = '<p>Nenhuma notícia encontrada.</p>';
       return;
     }
 
@@ -39,8 +45,9 @@
       const link = item.querySelector('link')?.textContent || '#';
       const pubDate = item.querySelector('pubDate')?.textContent;
       const contentEncoded = item.querySelector('content\\:encoded')?.textContent || item.querySelector('description')?.textContent || '';
-      let img = item.querySelector('media\\:content, enclosure')?.getAttribute('url') || null;
-      if (!img) {
+      
+      let img = null;
+      if (contentEncoded) {
         const tmp = document.createElement('div');
         tmp.innerHTML = contentEncoded;
         const imgEl = tmp.querySelector('img');
@@ -54,7 +61,7 @@
           ${img ? `<img src="${img}" alt="${title}" style="width:84px;height:60px;object-fit:cover;border-radius:6px;">` : ''}
           <div>
             <div style="font-weight:600;">${title}</div>
-            ${pubDate ? `<div style="font-size:12px;color:#666;">${new Date(pubDate).toLocaleDateString()}</div>` : ''}
+            ${pubDate ? `<div style="font-size:12px;color:#666;">${new Date(pubDate).toLocaleDateString('pt-BR')}</div>` : ''}
             <div style="font-size:13px;color:#444;">${stripHtml(contentEncoded).slice(0,120)}${stripHtml(contentEncoded).length>120?'…':''}</div>
           </div>
         </a>
@@ -68,7 +75,7 @@
 
   } catch (err) {
     console.error(err);
-    document.getElementById('posts-list').innerHTML = '<p>Erro ao carregar o feed (ver console do navegador para detalhes).</p>';
+    document.getElementById('posts-list').innerHTML = '<p>Erro ao carregar o feed. Tente novamente mais tarde.</p>';
   }
 })();
 </script>
