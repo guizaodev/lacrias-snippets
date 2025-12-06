@@ -56,11 +56,9 @@
       const commentRss = item.querySelector('wfw\\:commentRss')?.textContent || '';
       const commentsCount = item.querySelector('slash\\:comments')?.textContent || '0';
       
-      // Tenta diferentes formas de pegar o autor
-      let author = item.querySelector('dc\\:creator')?.textContent 
-                || item.querySelector('creator')?.textContent
-                || item.getElementsByTagName('dc:creator')[0]?.textContent
-                || 'Autor Desconhecido';
+      // Usa getElementsByTagNameNS para pegar o elemento com namespace correto
+      const creatorElement = item.getElementsByTagNameNS('http://purl.org/dc/elements/1.1/', 'creator')[0];
+      const author = creatorElement?.textContent || 'Autor Desconhecido';
       
       console.log('Author:', author);
       
