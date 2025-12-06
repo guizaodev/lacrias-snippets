@@ -43,10 +43,18 @@
 
     items.forEach(item => {
       console.log(item);
+      
+      // Captura todas as propriedades do XML
       const title = item.querySelector('title')?.textContent || 'Sem título';
       const link = item.querySelector('link')?.textContent || '#';
-      const pubDate = item.querySelector('pubDate')?.textContent;
+      const comments = item.querySelector('comments')?.textContent || '';
+      const pubDate = item.querySelector('pubDate')?.textContent || '';
       const category = item.querySelector('category')?.textContent || 'Sem categoria';
+      const guid = item.querySelector('guid')?.textContent || '';
+      const description = item.querySelector('description')?.textContent || '';
+      const contentEncoded = item.querySelector('content\\:encoded')?.textContent || description;
+      const commentRss = item.querySelector('wfw\\:commentRss')?.textContent || '';
+      const commentsCount = item.querySelector('slash\\:comments')?.textContent || '0';
       const author = item.querySelector('dc\\:creator')?.textContent || 'Autor Desconhecido';
       
       // Pega iniciais do primeiro e último nome
@@ -54,9 +62,6 @@
       const authorInitials = names.length > 1 
         ? (names[0][0] + names[names.length - 1][0]).toUpperCase()
         : names[0]?.substring(0, 2).toUpperCase() || 'AD';
-      
-      const commentsCount = item.querySelector('slash\\:comments')?.textContent || '0';
-      const contentEncoded = item.querySelector('content\\:encoded')?.textContent || item.querySelector('description')?.textContent || '';
       
       let img = null;
       if (contentEncoded) {
