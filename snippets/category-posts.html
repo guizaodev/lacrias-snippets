@@ -5,7 +5,10 @@
 
 <script>
 (async function(){
-  const feedUrl = 'https://laboratorios.ufpr.br/lacrias/category/noticias-internas/feed/';
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get('category') || 'noticias-internas';
+  
+  const feedUrl = `https://laboratorios.ufpr.br/lacrias/category/${category}/feed/`;
   const proxy = 'https://corsproxy.io/?' + encodeURIComponent(feedUrl);
   const maxPosts = 6;
 
