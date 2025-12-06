@@ -8,7 +8,9 @@
   const urlParams = new URLSearchParams(window.location.search);
   const category = urlParams.get('category') || 'noticias-internas';
   
-  const feedUrl = `https://laboratorios.ufpr.br/lacrias/category/${category}/feed/`;
+  // Adiciona timestamp para evitar cache do proxy
+  const timestamp = new Date().getTime();
+  const feedUrl = `https://laboratorios.ufpr.br/lacrias/category/${category}/feed/?t=${timestamp}`;
   const proxy = 'https://corsproxy.io/?' + encodeURIComponent(feedUrl);
   const maxPosts = 6;
 
