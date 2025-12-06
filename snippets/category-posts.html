@@ -21,12 +21,7 @@
   }
 
   try {
-    const res = await fetch(proxy, {
-      cache: 'no-store',
-      headers: {
-        'Cache-Control': 'no-cache'
-      }
-    });
+    const res = await fetch(proxy);
     if (!res.ok) throw new Error('Erro: ' + res.status);
     
     const xmlText = await res.text();
