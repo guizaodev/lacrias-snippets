@@ -6,7 +6,7 @@
 <script>
 (async function(){
   const feedUrl = 'https://laboratorios.ufpr.br/lacrias/category/noticias-internas/feed/';
-  const proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
+  const proxy = 'https://corsproxy.io/?' + encodeURIComponent(feedUrl);
   const maxPosts = 6;
 
   function stripHtml(html){
@@ -19,13 +19,7 @@
     const res = await fetch(proxy);
     if (!res.ok) throw new Error('Erro: ' + res.status);
     
-    // Pega o JSON retornado pelo proxy
-    const data = await res.json();
-    
-    // Extrai o conteúdo (que está em base64)
-    const base64Content = data.contents.split(',')[1];
-    const xmlText = atob(base64Content);
-    
+    const xmlText = await res.text();
     const parser = new DOMParser();
     const xml = parser.parseFromString(xmlText, 'application/xml');
 
