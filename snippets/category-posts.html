@@ -48,6 +48,13 @@
       const pubDate = item.querySelector('pubDate')?.textContent;
       const category = item.querySelector('category')?.textContent || 'Sem categoria';
       const author = item.querySelector('dc\\:creator')?.textContent || 'Autor Desconhecido';
+      
+      // Pega iniciais do primeiro e último nome
+      const names = author.split(' ').filter(n => n.length > 0);
+      const authorInitials = names.length > 1 
+        ? (names[0][0] + names[names.length - 1][0]).toUpperCase()
+        : names[0]?.substring(0, 2).toUpperCase() || 'AD';
+      
       const commentsCount = item.querySelector('slash\\:comments')?.textContent || '0';
       const contentEncoded = item.querySelector('content\\:encoded')?.textContent || item.querySelector('description')?.textContent || '';
       
@@ -87,7 +94,7 @@
               <div class="flex items-center justify-between pt-2 border-t border-stone-100">
                 <div class="flex items-center gap-2">
                   <div class="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <span class="text-xs font-medium text-emerald-700">RT</span>
+                    <span class="text-xs font-medium text-emerald-700">${authorInitials}</span>
                   </div>
                   <span class="text-sm text-stone-600">${author}</span>
                 </div>
