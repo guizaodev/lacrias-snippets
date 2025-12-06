@@ -42,6 +42,7 @@
     ul.className = 'list-none p-0';
 
     items.forEach(item => {
+      console.log(item);
       const title = item.querySelector('title')?.textContent || 'Sem título';
       const link = item.querySelector('link')?.textContent || '#';
       const pubDate = item.querySelector('pubDate')?.textContent;
