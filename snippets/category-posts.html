@@ -6,6 +6,7 @@
 <script>
 (async function(){
   const feedUrl = 'https://laboratorios.ufpr.br/lacrias/category/noticias-internas/feed/'; // <-- coloque o feed de POSTS correto
+  proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
   const maxPosts = 6;
 
   function stripHtml(html){
@@ -15,7 +16,7 @@
   }
 
   try {
-    const res = await fetch(feedUrl);
+    const res = await fetch(proxy);
     if (!res.ok) throw new Error('Erro: ' + res.status);
     const text = await res.text();
     const parser = new DOMParser();
