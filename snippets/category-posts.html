@@ -55,7 +55,14 @@
       const contentEncoded = item.querySelector('content\\:encoded')?.textContent || description;
       const commentRss = item.querySelector('wfw\\:commentRss')?.textContent || '';
       const commentsCount = item.querySelector('slash\\:comments')?.textContent || '0';
-      const author = item.querySelector('dc\\:creator')?.textContent || 'Autor Desconhecido';
+      
+      // Tenta diferentes formas de pegar o autor
+      let author = item.querySelector('dc\\:creator')?.textContent 
+                || item.querySelector('creator')?.textContent
+                || item.getElementsByTagName('dc:creator')[0]?.textContent
+                || 'Autor Desconhecido';
+      
+      console.log('Author:', author);
       
       // Pega iniciais do primeiro e último nome
       const names = author.split(' ').filter(n => n.length > 0);
