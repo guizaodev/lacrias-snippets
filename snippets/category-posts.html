@@ -1,0 +1,73 @@
+<div id="posts-from-rss">
+  <h2>Últimas postagens</h2>
+  <div id="posts-list">Carregando...</div>
+</div>
+
+<script>
+(async function(){
+  const feedUrl = 'https://laboratorios.ufpr.br/lacrias/category/noticias-internas/feed/'; // <-- coloque o feed de POSTS correto
+  const maxPosts = 6;
+
+  function stripHtml(html){
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html || '';
+    return tmp.textContent || tmp.innerText || '';
+  }
+
+  try {
+    const res = await fetch(feedUrl);
+    if (!res.ok) throw new Error('Erro: ' + res.status);
+    const text = await res.text();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'application/xml');
+
+    const items = Array.from(xml.querySelectorAll('item')).slice(0, maxPosts);
+
+    if (!items.length) {
+      document.getElementById('posts-list').innerHTML = '<p>Não foram encontrados &lt;item&gt; no feed. Verifique se você está usando o <strong>feed de POSTS</strong> da categoria (não o feed de comentários).</p>';
+      console.log('Conteúdo do feed:', text);
+      return;
+    }
+
+    const ul = document.createElement('ul');
+    ul.style.listStyle = 'none';
+    ul.style.padding = '0';
+
+    items.forEach(item => {
+      const title = item.querySelector('title')?.textContent || 'Sem título';
+      const link = item.querySelector('link')?.textContent || '#';
+      const pubDate = item.querySelector('pubDate')?.textContent;
+      const contentEncoded = item.querySelector('content\\:encoded')?.textContent || item.querySelector('description')?.textContent || '';
+      let img = item.querySelector('media\\:content, enclosure')?.getAttribute('url') || null;
+      if (!img) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = contentEncoded;
+        const imgEl = tmp.querySelector('img');
+        img = imgEl ? imgEl.src : null;
+      }
+
+      const li = document.createElement('li');
+      li.style.marginBottom = '12px';
+      li.innerHTML = `
+        <a href="${link}" style="display:flex; gap:10px; align-items:center; text-decoration:none; color:inherit;">
+          ${img ? `<img src="${img}" alt="${title}" style="width:84px;height:60px;object-fit:cover;border-radius:6px;">` : ''}
+          <div>
+            <div style="font-weight:600;">${title}</div>
+            ${pubDate ? `<div style="font-size:12px;color:#666;">${new Date(pubDate).toLocaleDateString()}</div>` : ''}
+            <div style="font-size:13px;color:#444;">${stripHtml(contentEncoded).slice(0,120)}${stripHtml(contentEncoded).length>120?'…':''}</div>
+          </div>
+        </a>
+      `;
+      ul.appendChild(li);
+    });
+
+    const container = document.getElementById('posts-list');
+    container.innerHTML = '';
+    container.appendChild(ul);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('posts-list').innerHTML = '<p>Erro ao carregar o feed (ver console do navegador para detalhes).</p>';
+  }
+})();
+</script>
