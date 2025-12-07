@@ -7,24 +7,8 @@
   <!-- Tailwind CDN (para protótipo). Em produção compile via Tailwind CLI/PostCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Animação simples para "coçar a cabeça" + balanço */
-    @keyframes tilt {
-      0% { transform: rotate(6deg) translateY(0); }
-      50% { transform: rotate(-6deg) translateY(-6px); }
-      100% { transform: rotate(6deg) translateY(0); }
-    }
-    @keyframes bob {
-      0% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-      100% { transform: translateY(0); }
-    }
-
     /* Sombras/efeitos */
     .soft-shadow { filter: drop-shadow(0 18px 20px rgba(0,0,0,0.12)); }
-
-    /* controle da animação via classe */
-    .anim-tilt { animation: tilt 2.6s ease-in-out infinite; transform-origin: 40% 60%; }
-    .anim-bob { animation: bob 3s ease-in-out infinite; }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-b from-white to-amber-50 flex items-center justify-center p-6">
@@ -50,7 +34,7 @@
         muted
         loop
         playsinline
-        class="w-full h-full object-contain soft-shadow anim-bob">
+        class="w-full h-full object-contain soft-shadow">
       </video>
     </div>
   </div>
