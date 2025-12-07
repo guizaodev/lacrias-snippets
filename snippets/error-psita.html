@@ -48,12 +48,13 @@
     <!-- Animação central substituída por vídeo WEBM com fundo transparente -->
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
       <video
-        src="https://guizaodev.github.io/lacrias-snippets/assets/output.webm"
         autoplay
         muted
         loop
         playsinline
         class="w-full h-full object-contain soft-shadow">
+        <source src="https://guizaodev.github.io/lacrias-snippets/assets/output.webm" type="video/webm">
+        <source src="https://guizaodev.github.io/lacrias-snippets/assets/output.mov" type="video/mp4">
       </video>
       <!-- Sombra no chão -->
       <div class="ground-shadow"></div>
