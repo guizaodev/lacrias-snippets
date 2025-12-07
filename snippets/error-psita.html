@@ -10,6 +10,12 @@
     /* Sombras/efeitos */
     .soft-shadow { filter: drop-shadow(0 18px 20px rgba(0,0,0,0.12)); }
     
+    /* Força transparência no vídeo (fix para Safari iOS) */
+    video {
+      background: transparent !important;
+      mix-blend-mode: normal;
+    }
+    
     /* Sombra na base do objeto */
     .ground-shadow {
       width: 60%;
