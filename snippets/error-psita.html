@@ -61,7 +61,7 @@
     <p id="hint" class="mt-3 text-sm text-gray-500">Tente voltar para a página inicial ou contate o suporte.</p>
 
     <!-- Controles para demo (não necessários em produção) -->
-    <div class="mt-6 flex items-center justify-center gap-3">
+    <div id="demoControls" class="mt-6 flex items-center justify-center gap-3">
       <input id="codeInput" type="number" min="100" max="599" class="w-24 p-2 rounded border border-gray-200 shadow-sm" placeholder="404" />
       <input id="msgInput" type="text" class="w-64 p-2 rounded border border-gray-200 shadow-sm" placeholder="Mensagem inferior" />
       <button id="applyBtn" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 rounded font-medium">Aplicar</button>
@@ -72,6 +72,13 @@
 <script>
   // Função utilitária para escapar texto em HTML
   function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Detecta se está dentro de um iframe e oculta controles de demo
+  const isInIframe = window.self !== window.top;
+  if (isInIframe) {
+    const demoControls = document.getElementById('demoControls');
+    if (demoControls) demoControls.style.display = 'none';
+  }
 
   // Lê query params e aplica no layout
   const params = new URLSearchParams(location.search);
