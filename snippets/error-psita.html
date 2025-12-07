@@ -32,8 +32,8 @@
 <!--
   Como usar:
   - Abra este arquivo diretamente (prototipo) ou sirva do seu servidor.
-  - Você pode controlar o código e a mensagem pela query string:
-      ?code=500&message=Ops%20algo%20deu%20errado
+  - Você pode controlar o código, título e subtítulo pela query string:
+      ?code=500&title=Erro%20Interno&subtitle=Algo%20deu%20errado
   - Observação: mudar o texto no cliente NÃO altera o status HTTP real do servidor. Se precisar definir o status HTTP de verdade, faça isso no servidor que entrega essa página.
 -->
 
@@ -76,16 +76,19 @@
   // Lê query params e aplica no layout
   const params = new URLSearchParams(location.search);
   const code = params.get('code') || '404';
-  const message = params.get('message') || 'Oops, acho que nos perdemos';
+  const title = params.get('title') || 'Oops, acho que nos perdemos';
+  const subtitle = params.get('subtitle') || 'Tente voltar para a página inicial ou contate o suporte.';
 
   const bigCodeEl = document.getElementById('big-code');
   const subtitleEl = document.getElementById('subtitle');
+  const hintEl = document.getElementById('hint');
   bigCodeEl.textContent = escapeHtml(code);
-  subtitleEl.textContent = escapeHtml(message);
+  subtitleEl.textContent = escapeHtml(title);
+  hintEl.textContent = escapeHtml(subtitle);
 
   // Preenche inputs de demo
   document.getElementById('codeInput').value = code;
-  document.getElementById('msgInput').value = message;
+  document.getElementById('msgInput').value = title;
 
   document.getElementById('applyBtn').addEventListener('click', ()=>{
     const newCode = document.getElementById('codeInput').value || '404';
@@ -95,7 +98,7 @@
     // atualiza query string sem recarregar (útil para copia/compartilhar o link)
     const u = new URL(location.href);
     u.searchParams.set('code', newCode);
-    u.searchParams.set('message', newMsg);
+    u.searchParams.set('title', newMsg);
     history.replaceState({}, '', u);
   });
 
