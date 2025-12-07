@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Erro • Página personalizada</title>
+  <!-- Tailwind CDN (para protótipo). Em produção compile via Tailwind CLI/PostCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Animação simples para "coçar a cabeça" + balanço */
+    @keyframes tilt {
+      0% { transform: rotate(6deg) translateY(0); }
+      50% { transform: rotate(-6deg) translateY(-6px); }
+      100% { transform: rotate(6deg) translateY(0); }
+    }
+    @keyframes bob {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0); }
+    }
+
+    /* Sombras/efeitos */
+    .soft-shadow { filter: drop-shadow(0 18px 20px rgba(0,0,0,0.12)); }
+
+    /* controle da animação via classe */
+    .anim-tilt { animation: tilt 2.6s ease-in-out infinite; transform-origin: 40% 60%; }
+    .anim-bob { animation: bob 3s ease-in-out infinite; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-b from-white to-amber-50 flex items-center justify-center p-6">
+
+<!--
+  Como usar:
+  - Abra este arquivo diretamente (prototipo) ou sirva do seu servidor.
+  - Você pode controlar o código e a mensagem pela query string:
+      ?code=500&message=Ops%20algo%20deu%20errado
+  - Observação: mudar o texto no cliente NÃO altera o status HTTP real do servidor. Se precisar definir o status HTTP de verdade, faça isso no servidor que entrega essa página.
+-->
+
+<div class="w-full max-w-5xl mx-auto text-center">
+  <div class="relative">
+    <!-- Número grande (ex.: 404) -->
+    <div id="big-code" class="pointer-events-none text-9xl sm:text-[12rem] font-extrabold text-amber-300/80 select-none">404</div>
+
+    <!-- Circle behind bird to match design -->
+    <div class="absolute inset-0 flex items-center justify-center">
+      <div class="w-48 h-48 sm:w-56 sm:h-56 bg-amber-400 rounded-full opacity-60 -z-10"></div>
+    </div>
+
+    <!-- Animação central substituída por vídeo WEBM com fundo transparente -->
+    <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-72 sm:h-72 flex items-center justify-center">
+      <video
+        src="https://guizaodev.github.io/lacrias-snippets/assets/output.webm"
+        autoplay
+        muted
+        loop
+        playsinline
+        class="w-full h-full object-contain soft-shadow anim-bob">
+      </video>
+    </div>
+  </div>
+
+  <!-- Mensagem inferior -->
+  <div class="mt-40 sm:mt-48">
+    <p id="subtitle" class="text-2xl sm:text-3xl font-semibold text-gray-800">Oops, acho que nos perdemos</p>
+    <p id="hint" class="mt-3 text-sm text-gray-500">Tente voltar para a página inicial ou contate o suporte.</p>
+
+    <!-- Controles para demo (não necessários em produção) -->
+    <div class="mt-6 flex items-center justify-center gap-3">
+      <input id="codeInput" type="number" min="100" max="599" class="w-24 p-2 rounded border border-gray-200 shadow-sm" placeholder="404" />
+      <input id="msgInput" type="text" class="w-64 p-2 rounded border border-gray-200 shadow-sm" placeholder="Mensagem inferior" />
+      <button id="applyBtn" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 rounded font-medium">Aplicar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Função utilitária para escapar texto em HTML
+  function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // Lê query params e aplica no layout
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code') || '404';
+  const message = params.get('message') || 'Oops, acho que nos perdemos';
+
+  const bigCodeEl = document.getElementById('big-code');
+  const subtitleEl = document.getElementById('subtitle');
+  bigCodeEl.textContent = escapeHtml(code);
+  subtitleEl.textContent = escapeHtml(message);
+
+  // Preenche inputs de demo
+  document.getElementById('codeInput').value = code;
+  document.getElementById('msgInput').value = message;
+
+  document.getElementById('applyBtn').addEventListener('click', ()=>{
+    const newCode = document.getElementById('codeInput').value || '404';
+    const newMsg = document.getElementById('msgInput').value || 'Oops, acho que nos perdemos';
+    bigCodeEl.textContent = newCode;
+    subtitleEl.textContent = newMsg;
+    // atualiza query string sem recarregar (útil para copia/compartilhar o link)
+    const u = new URL(location.href);
+    u.searchParams.set('code', newCode);
+    u.searchParams.set('message', newMsg);
+    history.replaceState({}, '', u);
+  });
+
+  // --- Observação importante sobre status HTTP real ---
+  // Não é possível, via código cliente (HTML/JS), alterar o status HTTP que o servidor devolve.
+  // Se você quer que o servidor retorne 404/500/etc, configure seu servidor (Express, Nginx, Next.js, etc.)
+  // para enviar esse status e em seguida servir esta página (ou uma versão do template).
+</script>
+</body>
+</html>
