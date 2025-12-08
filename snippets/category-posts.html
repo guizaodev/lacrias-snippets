@@ -1,6 +1,11 @@
 <!-- Adiciona Tailwind CSS via CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 
+<!-- Previne cache do iframe -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+
 <div id="posts-from-api">
   <h2>Últimas postagens</h2>
   <div id="posts-list">Carregando...</div>
@@ -199,7 +204,7 @@
       const isActive = i === currentPage;
       paginationHTML += `
         <li>
-          <a href="#" data-page="${i}" ${isActive ? 'aria-current="page"' : ''} class="flex items-center justify-center ${isActive ? 'text-fg-brand bg-neutral-tertiary-medium box-border border border-default-medium hover:text-fg-brand' : 'text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs'} font-medium text-sm w-9 h-9 focus:outline-none">${i}</a>
+          <a href="#" data-page="${i}" ${isActive ? 'aria-current="page"' : ''} class="flex items-center justify-center ${isActive ? 'text-white bg-emerald-600 border border-emerald-600 font-semibold' : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900'} text-sm w-9 h-9 focus:outline-none focus:ring-2 focus:ring-emerald-500">${i}</a>
         </li>
       `;
     }
