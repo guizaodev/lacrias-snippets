@@ -1,19 +1,64 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
-<a id="dynamicBtn"
-    href="#"
-    class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition">
-</a>
+<div id="mainContainer" class="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
+    <a id="dynamicBtn"
+        href="#"
+        class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition">
+    </a>
+
+    <!-- Controles para demo (não necessários em produção) -->
+    <div id="demoControls" class="flex items-center justify-center gap-3">
+        <input id="hrefInput" type="text" class="w-64 p-2 rounded border border-gray-200 shadow-sm" placeholder="URL do link" />
+        <input id="titleInput" type="text" class="w-64 p-2 rounded border border-gray-200 shadow-sm" placeholder="Texto do botão" />
+        <button id="applyBtn" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded font-medium">Aplicar</button>
+    </div>
+</div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const params = new URLSearchParams(window.top.location.search);
+    // Função utilitária para escapar texto em HTML
+    function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-        const href = params.get("href") || "#";
-        const title = params.get("title") || "Clique aqui";
+    // Detecta se está dentro de um iframe e oculta controles de demo
+    const isInIframe = window.self !== window.top;
+    if (isInIframe) {
+        const demoControls = document.getElementById('demoControls');
+        if (demoControls) demoControls.style.display = 'none';
+        
+        // Posiciona o botão no topo esquerdo quando em iframe
+        const mainContainer = document.getElementById('mainContainer');
+        if (mainContainer) {
+            mainContainer.style.position = 'fixed';
+            mainContainer.style.top = '0';
+            mainContainer.style.left = '0';
+            mainContainer.style.minHeight = 'auto';
+            mainContainer.style.justifyContent = 'flex-start';
+            mainContainer.style.alignItems = 'flex-start';
+        }
+    }
 
-        const btn = document.getElementById("dynamicBtn");
-        btn.href = href;
-        btn.textContent = title;
+    // Lê query params e aplica no botão
+    const params = new URLSearchParams(location.search);
+    const href = params.get("href") || "#";
+    const title = params.get("title") || "Clique aqui";
+
+    const btn = document.getElementById("dynamicBtn");
+    btn.href = href;
+    btn.textContent = escapeHtml(title);
+
+    // Preenche inputs de demo
+    document.getElementById('hrefInput').value = href;
+    document.getElementById('titleInput').value = title;
+
+    // Botão aplicar
+    document.getElementById('applyBtn').addEventListener('click', ()=>{
+        const newHref = document.getElementById('hrefInput').value || '#';
+        const newTitle = document.getElementById('titleInput').value || 'Clique aqui';
+        btn.href = newHref;
+        btn.textContent = escapeHtml(newTitle);
+        // atualiza query string sem recarregar
+        const u = new URL(location.href);
+        u.searchParams.set('href', newHref);
+        u.searchParams.set('title', newTitle);
+        history.replaceState({}, '', u);
     });
 </script>
