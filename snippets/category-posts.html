@@ -191,7 +191,7 @@
         <div class="flex items-center h-9">
           <ul class="flex -space-x-px text-sm">
           <li>
-            <a href="#" data-page="${currentPage - 1}" class="flex items-center justify-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-s-base text-sm px-3 h-9 focus:outline-none ${currentPage === 1 ? 'opacity-50 pointer-events-none' : ''}">Previous</a>
+            <a href="#" data-page="${currentPage - 1}" class="flex items-center justify-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-s-base text-sm px-3 h-9 focus:outline-none ${currentPage === 1 ? 'opacity-50 pointer-events-none' : ''}">Anterior</a>
           </li>
     `;
 
@@ -206,7 +206,7 @@
 
     paginationHTML += `
           <li>
-            <a href="#" data-page="${currentPage + 1}" class="flex items-center justify-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-e-base text-sm px-3 h-9 focus:outline-none ${currentPage === totalPages ? 'opacity-50 pointer-events-none' : ''}">Next</a>
+            <a href="#" data-page="${currentPage + 1}" class="flex items-center justify-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-e-base text-sm px-3 h-9 focus:outline-none ${currentPage === totalPages ? 'opacity-50 pointer-events-none' : ''}">Próximo</a>
           </li>
         </ul>
         </div>
@@ -214,9 +214,9 @@
           <form class="w-32">
             <label for="items-per-page" class="sr-only">Select an option</label>
             <select id="items-per-page" class="block w-full h-9 px-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm leading-4 rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body">
-              <option value="5" ${itemsPerPage === 5 ? 'selected' : ''}>5 per page</option>
-              <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10 per page</option>
-              <option value="25" ${itemsPerPage === 25 ? 'selected' : ''}>25 per page</option>
+              <option value="5" ${itemsPerPage === 5 ? 'selected' : ''}>5 por página</option>
+              <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10 por página</option>
+              <option value="25" ${itemsPerPage === 25 ? 'selected' : ''}>25 por página</option>
             </select>
           </form>
         </div>
