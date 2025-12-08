@@ -1,21 +1,26 @@
 <!-- Adiciona Tailwind CSS via CDN -->
 <script src="https://cdn.tailwindcss.com"></script>
 
-<div id="posts-from-rss">
+<div id="posts-from-api">
   <h2>Últimas postagens</h2>
   <div id="posts-list">Carregando...</div>
+  <div id="pagination-container"></div>
 </div>
 
 <script>
 (async function(){
   const urlParams = new URLSearchParams(window.location.search);
-  const category = urlParams.get('category') || 'noticias-internas';
+  const categorySlug = urlParams.get('category') || 'noticias-internas';
   
-  // Adiciona timestamp para evitar cache do proxy
-  const timestamp = new Date().getTime();
-  const feedUrl = `https://laboratorios.ufpr.br/lacrias/category/${category}/feed/?t=${timestamp}`;
-  const proxy = 'https://corsproxy.io/?' + encodeURIComponent(feedUrl);
-  const maxPosts = 6;
+  const baseUrl = 'https://laboratorios.ufpr.br/lacrias/wp-json/wp/v2';
+  
+  // Variáveis de controle
+  let categoryId = null;
+  let currentPage = 1;
+  let itemsPerPage = 10;
+  let totalPosts = 0;
+  let totalPages = 0;
+  let isLoading = false;
 
   function stripHtml(html){
     const tmp = document.createElement('div');
@@ -23,46 +28,82 @@
     return tmp.textContent || tmp.innerText || '';
   }
 
-  try {
-    const res = await fetch(proxy);
-    if (!res.ok) throw new Error('Erro: ' + res.status);
-    
-    const xmlText = await res.text();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(xmlText, 'application/xml');
-
-    const items = Array.from(xml.querySelectorAll('item')).slice(0, maxPosts);
-
-    if (!items.length) {
-      // Redireciona o iframe (não a página pai)
-      const errorUrl = 'https://guizaodev.github.io/lacrias-snippets/snippets/error-psita.html?code=204&title=Oops%2C+ainda+não+há+posts+nessa+categoria';
-      window.location.href = errorUrl;
-      return;
+  // Busca o ID da categoria pelo slug
+  async function getCategoryId() {
+    try {
+      const response = await fetch(`${baseUrl}/categories?slug=${categorySlug}`);
+      if (!response.ok) throw new Error('Erro ao buscar categoria');
+      
+      const categories = await response.json();
+      if (!categories.length) {
+        throw new Error('Categoria não encontrada');
+      }
+      
+      return categories[0].id;
+    } catch (error) {
+      console.error('Erro ao buscar categoria:', error);
+      throw error;
     }
+  }
 
+  // Busca os posts da categoria
+  async function fetchPosts() {
+    if (isLoading) return;
+    isLoading = true;
+
+    try {
+      const response = await fetch(
+        `${baseUrl}/posts?categories=${categoryId}&per_page=${itemsPerPage}&page=${currentPage}&_embed`
+      );
+      
+      if (!response.ok) {
+        if (response.status === 400) {
+          throw new Error('Página inválida');
+        }
+        throw new Error('Erro ao buscar posts');
+      }
+      
+      // Pega o total de posts e páginas do header
+      totalPosts = parseInt(response.headers.get('X-WP-Total') || '0');
+      totalPages = parseInt(response.headers.get('X-WP-TotalPages') || '0');
+      
+      const posts = await response.json();
+      
+      if (!posts.length && currentPage === 1) {
+        // Redireciona se não houver posts
+        const errorUrl = 'https://guizaodev.github.io/lacrias-snippets/snippets/error-psita.html?code=204&title=Oops%2C+ainda+não+há+posts+nessa+categoria';
+        window.location.href = errorUrl;
+        return;
+      }
+      
+      renderPosts(posts);
+      renderPagination();
+      
+    } catch (error) {
+      console.error('Erro ao carregar posts:', error);
+      document.getElementById('posts-list').innerHTML = '<p>Erro ao carregar os posts. Tente novamente mais tarde.</p>';
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  function renderPosts(posts) {
     const ul = document.createElement('ul');
     ul.className = 'list-none p-0';
 
-    items.forEach(item => {
-      console.log(item);
+    posts.forEach(post => {
+      // Extrai dados do post
+      const title = post.title.rendered || 'Sem título';
+      const link = post.link || '#';
+      const pubDate = post.date || '';
+      const excerpt = post.excerpt.rendered || '';
+      const content = post.content.rendered || '';
       
-      // Captura todas as propriedades do XML
-      const title = item.querySelector('title')?.textContent || 'Sem título';
-      const link = item.querySelector('link')?.textContent || '#';
-      const comments = item.querySelector('comments')?.textContent || '';
-      const pubDate = item.querySelector('pubDate')?.textContent || '';
-      const category = item.querySelector('category')?.textContent || 'Sem categoria';
-      const guid = item.querySelector('guid')?.textContent || '';
-      const description = item.querySelector('description')?.textContent || '';
-      const contentEncoded = item.querySelector('content\\:encoded')?.textContent || description;
-      const commentRss = item.querySelector('wfw\\:commentRss')?.textContent || '';
-      const commentsCount = item.querySelector('slash\\:comments')?.textContent || '0';
+      // Categoria principal
+      const categoryName = post._embedded?.['wp:term']?.[0]?.[0]?.name || 'Sem categoria';
       
-      // Usa getElementsByTagNameNS para pegar o elemento com namespace correto
-      const creatorElement = item.getElementsByTagNameNS('http://purl.org/dc/elements/1.1/', 'creator')[0];
-      const author = creatorElement?.textContent || 'Autor Desconhecido';
-      
-      console.log('Author:', author);
+      // Autor
+      const author = post._embedded?.author?.[0]?.name || 'Autor Desconhecido';
       
       // Pega iniciais do primeiro e último nome
       const names = author.split(' ').filter(n => n.length > 0);
@@ -70,13 +111,11 @@
         ? (names[0][0] + names[names.length - 1][0]).toUpperCase()
         : names[0]?.substring(0, 2).toUpperCase() || 'AD';
       
-      let img = null;
-      if (contentEncoded) {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = contentEncoded;
-        const imgEl = tmp.querySelector('img');
-        img = imgEl ? imgEl.src : null;
-      }
+      // Imagem destacada
+      const featuredImage = post._embedded?.['wp:featuredmedia']?.[0]?.source_url || null;
+      
+      // Número de comentários
+      const commentsCount = post.comment_count || 0;
 
       const li = document.createElement('li');
       li.className = 'mb-3';
@@ -87,15 +126,15 @@
               <!-- Category & Date -->
               <div class="flex items-center justify-between">
                 <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                ${category}
+                  ${categoryName}
                 </span>
                 <time datetime="${pubDate}" class="text-sm text-stone-400">${new Date(pubDate).toLocaleDateString('pt-BR')}</time>
               </div>
               
-              ${img ? `
+              ${featuredImage ? `
               <!-- Image -->
               <div class="w-full h-48 rounded-lg overflow-hidden">
-                <img src="${img}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                <img src="${featuredImage}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
               </div>
               ` : ''}
               
@@ -106,7 +145,7 @@
               
               <!-- Description -->
               <p class="text-stone-500 text-sm leading-relaxed">
-                ${stripHtml(contentEncoded).slice(0,150)}${stripHtml(contentEncoded).length>150?'…':''}
+                ${stripHtml(excerpt || content).slice(0,150)}${stripHtml(excerpt || content).length>150?'…':''}
               </p>
               
               <!-- Footer: Author & Comments -->
@@ -134,10 +173,89 @@
     const container = document.getElementById('posts-list');
     container.innerHTML = '';
     container.appendChild(ul);
+  }
 
-  } catch (err) {
-    console.error(err);
-    document.getElementById('posts-list').innerHTML = '<p>Erro ao carregar o feed. Tente novamente mais tarde.</p>';
+  function renderPagination() {
+    const paginationContainer = document.getElementById('pagination-container');
+
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    let paginationHTML = `
+      <nav aria-label="Page navigation" class="flex items-center justify-center space-x-4 mt-6">
+        <div class="flex items-center h-9">
+          <ul class="flex -space-x-px text-sm">
+          <li>
+            <a href="#" data-page="${currentPage - 1}" class="flex items-center justify-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-s-base text-sm px-3 h-9 focus:outline-none ${currentPage === 1 ? 'opacity-50 pointer-events-none' : ''}">Previous</a>
+          </li>
+    `;
+
+    for (let i = startPage; i <= endPage; i++) {
+      const isActive = i === currentPage;
+      paginationHTML += `
+        <li>
+          <a href="#" data-page="${i}" ${isActive ? 'aria-current="page"' : ''} class="flex items-center justify-center ${isActive ? 'text-fg-brand bg-neutral-tertiary-medium box-border border border-default-medium hover:text-fg-brand' : 'text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs'} font-medium text-sm w-9 h-9 focus:outline-none">${i}</a>
+        </li>
+      `;
+    }
+
+    paginationHTML += `
+          <li>
+            <a href="#" data-page="${currentPage + 1}" class="flex items-center justify-center text-body bg-neutral-secondary-medium border border-default-medium hover:bg-neutral-tertiary-medium hover:text-heading shadow-xs font-medium leading-5 rounded-e-base text-sm px-3 h-9 focus:outline-none ${currentPage === totalPages ? 'opacity-50 pointer-events-none' : ''}">Next</a>
+          </li>
+        </ul>
+        </div>
+        <div class="flex flex-col items-center h-9">
+          <form class="w-32">
+            <label for="items-per-page" class="sr-only">Select an option</label>
+            <select id="items-per-page" class="block w-full h-9 px-3 bg-neutral-secondary-medium border border-default-medium text-heading text-sm leading-4 rounded-base focus:ring-brand focus:border-brand shadow-xs placeholder:text-body">
+              <option value="5" ${itemsPerPage === 5 ? 'selected' : ''}>5 per page</option>
+              <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10 per page</option>
+              <option value="25" ${itemsPerPage === 25 ? 'selected' : ''}>25 per page</option>
+            </select>
+          </form>
+        </div>
+      </nav>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
+
+    // Event listeners para paginação
+    paginationContainer.querySelectorAll('a[data-page]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = parseInt(link.getAttribute('data-page'));
+        if (page >= 1 && page <= totalPages && page !== currentPage) {
+          currentPage = page;
+          fetchPosts();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Event listener para items per page
+    const selectElement = paginationContainer.querySelector('#items-per-page');
+    if (selectElement) {
+      selectElement.addEventListener('change', (e) => {
+        itemsPerPage = parseInt(e.target.value);
+        currentPage = 1; // Reset para primeira página
+        fetchPosts();
+      });
+    }
+  }
+
+  // Inicializa: busca o ID da categoria e depois os posts
+  try {
+    categoryId = await getCategoryId();
+    await fetchPosts();
+  } catch (error) {
+    console.error('Erro na inicialização:', error);
+    document.getElementById('posts-list').innerHTML = '<p>Erro ao inicializar. Verifique se a categoria existe.</p>';
   }
 })();
 </script>
