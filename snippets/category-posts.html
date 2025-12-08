@@ -34,7 +34,9 @@
     const items = Array.from(xml.querySelectorAll('item')).slice(0, maxPosts);
 
     if (!items.length) {
-      document.getElementById('posts-list').innerHTML = '<p>Nenhuma notícia encontrada.</p>';
+      // Redireciona o iframe (não a página pai)
+      const errorUrl = 'https://guizaodev.github.io/lacrias-snippets/snippets/error-psita.html?code=204&title=Oops%2C+ainda+não+há+posts+nessa+categoria';
+      window.location.href = errorUrl;
       return;
     }
 
