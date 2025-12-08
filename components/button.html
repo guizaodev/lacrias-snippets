@@ -7,7 +7,7 @@
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URLSearchParams(window.top.location.search);
 
         const href = params.get("href") || "#";
         const title = params.get("title") || "Clique aqui";
