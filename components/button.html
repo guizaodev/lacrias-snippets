@@ -1,0 +1,19 @@
+<script src="https://cdn.tailwindcss.com"></script>
+
+<a id="dynamicBtn"
+    href="#"
+    class="bg-green-600 text-white px-4 py-2 rounded-full hover:bg-green-700 transition">
+</a>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const params = new URLSearchParams(window.location.search);
+
+        const href = params.get("href") || "#";
+        const title = params.get("title") || "Clique aqui";
+
+        const btn = document.getElementById("dynamicBtn");
+        btn.href = href;
+        btn.textContent = title;
+    });
+</script>
